@@ -3,28 +3,10 @@ import cors from "cors";
 import path from "path";
 import { logger } from "./middleware/LogEvent.js";
 import errHandler from "./middleware/errorhandler.js";
-import rootRouter from "./routes/root.js";
-import subdirRouter from "./routes/subdir.js";
-import registerRoute from "./routes/api/register.js";
-import waitListRoute from "./routes/api/waitlist.js";
-import authRouter from "./routes/api/auth.js";
-import refreshRoute from "./routes/api/refreshToken.js";
-import logoutRouter from "./routes/api/logout.js";
-import storesRouter from "./routes/api/store.js";
-import productRouter from "./routes/api/products.js";
-import categoryRouter from "./routes/api/categories.js";
-import uploadRouter from "./routes/api/uploads.js";
-import storeProductsRouter from "./routes/api/storeProducts.js";
-import cartRouter from "./routes/api/cart.js";
-import wishListRouter from "./routes/api/wishList.js";
-import storeCategoriesRouter from "./routes/api/storeCategories.js";
-import checkoutRouter from "./routes/api/checkout.js";
-import orderRouter from "./routes/api/order.js";
-import accountRouter from "./routes/api/account.js";
-import addressRouter from "./routes/api/address.js";
-import checkStoreRouter from "./routes/api/checkStore.js";
 import corsOptions from "./config/corsOptions.js";
-import VerifyJWT from "./middleware/verifyJwt.js";
+import authRoute from "./routes/api/auth.js";
+import profileRoute from "./routes/api/profile.js";
+import chatRoute from "./routes/api/chat.js";
 import cookieParser from "cookie-parser";
 import credentials from "./middleware/credentials.js";
 import cloudinary from "cloudinary";
@@ -48,7 +30,7 @@ cloudinary.config({
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3500;
+const PORT = process.env.PORT || 3600;
 
 connectDB();
 // custom middleware logger
@@ -76,37 +58,12 @@ app.use("/", express.static(path.join(__dirname, "public")));
 app.use("/subdir", express.static(path.join(__dirname, "public")));
 
 // Routes
-app.use("/api", rootRouter);
-app.use("/api/register", registerRoute);
-app.use("/api/waitlist", waitListRoute);
-app.use("/api/auth", authRouter);
-app.use("/api/refresh", refreshRoute);
-app.use("/api/logout", logoutRouter);
-app.use("/api/store", storeProductsRouter);
-app.use("/api/cart", cartRouter);
-app.use("/api/wishlist", wishListRouter);
-app.use("/api/storecategories", storeCategoriesRouter);
-app.use("/api/customerorder", orderRouter);
-app.use("/api/account", accountRouter);
-app.use("/api/address", addressRouter);
-app.use("/api/checkout", checkoutRouter);
-app.use("/api/checkstore", checkStoreRouter);
-app.use(VerifyJWT);
-app.use("/api/stores", storesRouter);
-app.use("/api/products", productRouter);
-app.use("/api/categories", categoryRouter);
-app.use("/api/uploads", uploadRouter);
-app.use("/api/orders", orderRouter);
-app.use("/subdir", subdirRouter);
+app.use("/api/auth", authRoute);
+app.use("/api/profile", profileRoute);
+app.use("/api/chats", chatRoute);
 
 app.all("*", (req, res) => {
-  if (req.accepts("html")) {
-    res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
-  } else if (req.accepts("json")) {
-    res.status(404).json({ error: "404 Not Found" });
-  } else {
-    res.status(404).type("txt").send("404 Not Found");
-  }
+  res.sendStatus(404);
 });
 
 app.use(errHandler);

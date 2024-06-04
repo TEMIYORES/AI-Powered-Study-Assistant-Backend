@@ -1,81 +1,68 @@
-import StoreDB from "../model/Store.js";
+import Account from "../model/Account.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
-const handleStoreAuth = async (req, res) => {
-  const cookies = req.cookies;
-  console.log("cookie available at login -", cookies?.jwt);
+const registerAccount = async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ message: "email and password are required" });
-  }
-  const foundStore = await StoreDB.findOne({ email }).exec();
-  console.log({ foundStore });
-  if (!foundStore) {
-    return res
-      .status(401)
-      .json({ message: `email or password does not match` });
-  }
-  //   evaluate Password
-  const match = await bcrypt.compare(password, foundStore.password);
-  if (!match) {
-    return res
-      .status(401)
-      .json({ message: `email or password does not match` });
-  }
-  const roles = Object.values(foundStore.roles).filter(Boolean);
-  //   Create Jwts
-  const accessToken = jwt.sign(
-    {
-      storeInfo: {
-        id: foundStore.id,
-        email: foundStore.email,
-        storeName: foundStore.storeName,
-        roles: roles,
-      },
-    },
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "10m" }
-  );
-  const newRefreshToken = jwt.sign(
-    { email: foundStore.email },
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: "1d" }
-  );
-
-  let newRefreshTokenArray = !cookies?.jwt
-    ? foundStore.refreshToken
-    : foundStore.refreshToken.filter((token) => token !== cookies?.jwt);
-
-  if (cookies?.jwt) {
-    // Scenerio:
-    // 1). Store logins in but never uses the refreshToken and does not logout
-    // 2). refreshToken is stolen
-    // 3). If 1 & 2 reuse detection is needed to clear all Rts when Store logs in
-    const refreshToken = cookies.jwt;
-    const foundToken = await StoreDB.findOne({ refreshToken }).exec();
-
-    // detected refresh token reuse!
-    if (!foundToken) {
-      console.log("attempted refreshToken reuse at login");
-      // Clear all previous tokens
-      newRefreshTokenArray = [];
-    }
-    res.clearCookie("jwt", {
-      httpOnly: true,
-      sameSite: "None",
-      secure: true,
+  if (!email) {
+    return res.status(400).json({
+      message: "email is required",
     });
   }
-  foundStore.refreshToken = [...newRefreshTokenArray, newRefreshToken];
-  await foundStore.save();
-  res.cookie("jwt", newRefreshToken, {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-    sameSite: "None",
-    secure: true,
-  });
-  return res.status(200).json({ accessToken, storeName: foundStore.storeName });
+  //   Check for duplicate users in the database
+  const duplicate = await Account.findOne({ email }).exec(); //findOne method need exec() if there is no callback
+
+  if (duplicate) {
+    return res.status(409).json({ message: "email already exists!" });
+  }
+
+  try {
+    // encrypt the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const response = await Account.create({
+      ...req.body,
+      password: hashedPassword,
+    });
+    console.log({ response });
+    res.status(201).json({ message: `${email} registered successfully!` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const updateAccount = async (req, res) => {
+  const { email, phoneNumber, emailVerified, photoURL } = req.body;
+  if (!email) {
+    return res.status(400).json({
+      message: "email is required",
+    });
+  }
+  try {
+    const account = await Account.findOne({ email }).exec();
+    if (phoneNumber) account.phoneNumber = phoneNumber;
+    if (emailVerified) account.emailVerified = emailVerified;
+    if (photoURL) account.photoURL = photoURL;
+    if (profileSetup) account.profileSetup = profileSetup;
+    await account.save();
+    console.log({ account });
+    return res.sendStatus(204);
+  } catch (error) {
+    console.error("Error updating info:", error);
+    return res.sendStatus(400);
+  }
+};
+const loginAccount = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({
+      message: "email is required",
+    });
+  }
+  try {
+    const account = await Account.findOne({ email }).exec();
+    return res.status(200).json(account);
+  } catch (error) {
+    console.error("Error finding account:", error);
+    return res.sendStatus(400);
+  }
 };
 
-export default handleStoreAuth;
+export { registerAccount, updateAccount, loginAccount };
