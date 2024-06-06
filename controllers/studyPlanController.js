@@ -30,30 +30,38 @@ const generateStudyPlan = async (req, res) => {
       (key) => `${key[0]}: ${key[1].join("-")}`
     );
     const prompt = `
-Generate a personalized study plan for the following user:
-- Subjects: ${subjects.join(", ")}
-- short-term Goals: ${profileData.shortTermGoals}
-- long-term Goals: ${profileData.longTermGoals}
-- Preferred Study Times: ${preferredTimes.join(", ")}
-- study session duration: ${profileData.studySessionDuration}
-- study session break frequency: ${profileData.breakFrequency}
-- Learning Style: ${profileData.learningStyle}
-- days available for study: ${availableDays.join(", ")}
-- time available for each study day: ${timeAvailability.join(", ")}
-
-Provide a detailed study plan for one week, including study sessions, breaks, and tips.
+    Create a personalized study plan for the following user in JSON format:
+    Subjects: ${subjects.join(", ")}
+    Short-term Goals: ${profileData.shortTermGoals}
+    Long-term Goals: ${profileData.longTermGoals}
+    Preferred Study Times: ${preferredTimes.join(", ")}
+    Study Session Duration: ${profileData.studySessionDuration}
+    Study Session Break Frequency: ${profileData.breakFrequency}
+    Learning Style: ${profileData.learningStyle}
+    Days Available for Study: ${availableDays.join(", ")}
+    Time Available for Each Study Day: ${timeAvailability.join(", ")}
+    Generate a detailed study plan for one week, including study sessions, breaks, and study tips. The study plan should be provided in the following JSON format:
+    {"studyPlan": {"week": [{"day": "","availableTime": "","sessions": [{"subject": "","startTime": "","endTime": "","breaks": [{"startTime": "","endTime": ""}],"tips": []}]},]}}
+    Make sure to include study sessions, breaks, and tips for each day based on the provided information. Do not add an explanation for the studyplan just the json.
 `;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     // Extract generated study plan from the response
-    const studyPlan = response.text();
+    const studyPlan = JSON.parse(
+      response
+        .text()
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+    );
+
     // store the studyPlan in db
+
     await StudyPlan.create({
       email,
-      studyPlan,
+      studyPlan: studyPlan.studyPlan,
     });
     // Respond with the generated study plan
-    res.status(200).json(studyPlan);
+    return res.status(200).json(studyPlan.studyPlan);
   } catch (error) {
     console.error("Error generating study plan:", error);
     res.status(500).json({ error: "Internal server error" });

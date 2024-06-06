@@ -1,8 +1,23 @@
-// const timeAvailability = Object.entries({{monday:['14:00','16:00']},{tuesday:['14:00','16:00']}}).map((keys,values)=>{
+const subjects = [
+  { subject: "Mathematics", duration: 30 },
+  { subject: "English", duration: 30 },
+  { subject: "Mathematics", duration: 40 },
+  { subject: "English", duration: 40 },
+];
+const validSubjects = ["Mathematics", "Science", "English"];
+// Group subjects and sum durations
+const groupedSubjects = subjects.reduce((acc, current) => {
+  const { subject, duration } = current;
+  if (!acc[subject]) {
+    acc[subject] = { subject, duration: 0 };
+  }
+  acc[subject].duration += duration;
+  return acc;
+}, {});
+validSubjects.forEach((subject) => {
+  if (!groupedSubjects[subject]) {
+    groupedSubjects[subject] = { subject, duration: 0 };
+  }
+});
 
-// })
-const dip = Object.entries({
-  monday: ["14:00", "16:00"],
-  tuesday: ["14:00", "16:00"],
-}).map((key) => `${key[0]}: ${key[1].join("-")}`);
-console.log(dip.join(", "));
+console.log(Object.values(groupedSubjects));

@@ -14,10 +14,6 @@ const studySessionSchema = new Schema(
       type: Number,
       required: true,
     },
-    date: {
-      type: String,
-      required: true,
-    },
   },
   {
     timestamps: true,
@@ -29,7 +25,6 @@ studySessionSchema.methods.toJSON = function () {
   const studySession = this.toObject();
   delete studySession._id;
   delete studySession.createdAt;
-  delete studySession.updatedAt;
   return studySession;
 };
 

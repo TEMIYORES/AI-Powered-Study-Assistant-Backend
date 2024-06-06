@@ -6,7 +6,7 @@ const studyPlanSchema = new Schema(
       type: String,
     },
     studyPlan: {
-      type: String,
+      type: Object,
     },
   },
   {

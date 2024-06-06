@@ -1,71 +1,66 @@
 import Profile from "../model/Profile.js";
 import StudySession from "../model/StudySession.js";
 
-
-const generateStudySession = async (req, res) => {
-  const { email } = req.body;
+const logSession = async (req, res) => {
+  const { email, subject, duration } = req.body;
+  console.log(req.body);
+  if (!email || !subject || !duration)
+    return res
+      .status(400)
+      .json({ message: "email, subject and duration are required" });
   try {
-    const foundStudySession = await StudySession.findOne({ email }).exec();
-    // Generate prompt based on user profile data
-    if (foundStudySession) return res.status(200).json(foundStudySession.studySession);
-
-    const profileData = await Profile.findOne({ email }).exec();
-    if (!profileData)
-      return res.status(400).json({ message: "Profile not filled yet." });
-    const subjects = profileData.subjects.map((subject) => subject.value);
-    const preferredTimes = profileData.preferredStudyTimes.map(
-      (time) => time.value
-    );
-    const availableDays = profileData.availableStudyDays.map(
-      (day) => day.value
-    );
-    const timeAvailability = Object.entries(profileData.timeAvailability).map(
-      (key) => `${key[0]}: ${key[1].join("-")}`
-    );
-    const prompt = `
-Generate a personalized study Session for the following user:
-- Subjects: ${subjects.join(", ")}
-- short-term Goals: ${profileData.shortTermGoals}
-- long-term Goals: ${profileData.longTermGoals}
-- Preferred Study Times: ${preferredTimes.join(", ")}
-- study session duration: ${profileData.studySessionDuration}
-- study session break frequency: ${profileData.breakFrequency}
-- Learning Style: ${profileData.learningStyle}
-- days available for study: ${availableDays.join(", ")}
-- time available for each study day: ${timeAvailability.join(", ")}
-
-Provide a detailed study Session for one week, including study sessions, breaks, and tips.
-`;
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    // Extract generated study Session from the response
-    const studySession = response.text();
-    // store the studySession in db
     await StudySession.create({
       email,
-      studySession,
+      subject,
+      duration,
     });
-    // Respond with the generated study Session
-    res.status(200).json(studySession);
+    res.status(201).json({ message: "session saved successfully" });
   } catch (error) {
     console.error("Error generating study Session:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+const getStudySessions = async (req, res) => {
+  const { email } = req.params;
+  console.log(req.body);
+  if (!email) return res.status(400).json({ message: "email is required" });
+  try {
+    const studySession = await StudySession.find({ email });
+    res.status(201).json(studySession);
+  } catch (error) {
+    console.error("Error retrieving study sessions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+const getStudyMins = async (req, res) => {
+  const { email } = req.params;
+  console.log(req.params);
+  if (!email) return res.status(400).json({ message: "email is required" });
+  try {
+    const profile = await Profile.findOne({ email }).exec();
+    const validSubjects = profile.subjects;
+    const studySession = await StudySession.find({ email });
+    // Group subjects and sum durations
+    const groupedSubjects = studySession.reduce((acc, current) => {
+      const { subject, duration } = current;
+      if (!acc[subject]) {
+        acc[subject] = { subject, duration: 0 };
+      }
+      acc[subject].duration += duration;
+      return acc;
+    }, {});
+    validSubjects.forEach((subject) => {
+      const { value } = subject;
+      if (!groupedSubjects[value]) {
+        groupedSubjects[value] = { value, duration: 0 };
+      }
+    });
+    console.log({ groupedSubjects });
+    res.status(201).json(Object.values(groupedSubjects));
+  } catch (error) {
+    console.error("Error retrieving study sessions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
-export { generateStudySession };
-
-// const prompt = `
-// Generate a personalized study Session for the following user:
-// - Subjects: ${subjects.join(", ")}
-// - short-term Goals: ${profileData.shortTermGoals}
-// - long-term Goals: ${profileData.longTermGoals}
-// - Preferred Study Times: ${preferredTimes.join(", ")}
-// - study session duration: ${profileData.studySessionDuration}
-// - study session break frequency: ${profileData.breakFrequency}
-// - Learning Style: ${profileData.learningStyle}
-// - days available for study: ${availableDays.join(", ")}
-// - time available for each study day: ${timeAvailability.join(", ")}
-
-// Provide a detailed study Session for one week, including study sessions, breaks, and tips.
-// `;
+export { logSession, getStudySessions, getStudyMins };

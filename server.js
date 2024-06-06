@@ -7,6 +7,8 @@ import corsOptions from "./config/corsOptions.js";
 import authRoute from "./routes/api/auth.js";
 import profileRoute from "./routes/api/profile.js";
 import chatRoute from "./routes/api/chat.js";
+import StudySessionRoute from "./routes/api/studySession.js";
+import NotificationRoute from "./routes/api/notification.js";
 import cookieParser from "cookie-parser";
 import credentials from "./middleware/credentials.js";
 import cloudinary from "cloudinary";
@@ -61,6 +63,8 @@ app.use("/subdir", express.static(path.join(__dirname, "public")));
 app.use("/api/auth", authRoute);
 app.use("/api/profile", profileRoute);
 app.use("/api/chats", chatRoute);
+app.use("/api/studysession", StudySessionRoute);
+app.use("/api/notifications", NotificationRoute);
 
 app.all("*", (req, res) => {
   res.sendStatus(404);

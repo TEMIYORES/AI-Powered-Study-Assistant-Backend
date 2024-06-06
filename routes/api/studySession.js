@@ -1,11 +1,13 @@
 import express from "express";
-
-import { saveProfile } from "../../controllers/ProfileController.js";
-import { generateStudySession } from "../../controllers/studySessionController.js";
+import {
+  getStudyMins,
+  getStudySessions,
+  logSession,
+} from "../../controllers/studySessionController.js";
 
 const router = express.Router();
-router.route("/").post(saveProfile);
-router.route("/generatestudySession").post(generateStudySession);
-router.route("/generatestudySession").post(generateStudySession);
+router.route("/progress/:email").get(getStudyMins);
+router.route("/").post(logSession);
+router.route("/:email").get(getStudySessions);
 
 export default router;
