@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Time to Read</title>
+    <title>AI-Powered Study Assistant</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.6/lottie.min.js"></script>
     <!-- <style>
       body {
         font-family: Arial, sans-serif;
@@ -67,8 +68,8 @@
   <body
     style="
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
       color: #333;
+      background-color: #eee;
       margin: 0;
       padding: 20px;
     "
@@ -93,8 +94,15 @@
         "
         class="header"
       >
+        <div
+          id="lottie-container"
+          style="width: 100px; height: 100px; margin: auto"
+        ></div>
+        <!-- <h3 style="margin-bottom: 10px; font-size: 16px; color: #4f46e5">
+          AI-Powered Study Assistant
+        </h3> -->
         <h1 style="margin: 0; font-size: 24px; color: #4f46e5">
-          Time to Read!
+          <%= heading %>
         </h1>
       </div>
       <div style="font-size: 16px; line-height: 1.6" class="content">
@@ -151,5 +159,14 @@
         </p>
       </div>
     </div>
+    <script>
+      var animation = lottie.loadAnimation({
+        container: document.getElementById("lottie-container"), // the DOM element that will contain the animation
+        renderer: "svg", // the rendering method (svg, canvas, or html)
+        loop: true, // whether the animation should loop
+        autoplay: true, // whether the animation should start playing automatically
+        path: `../public/img/chatbot.json`, // the path to the animation JSON file
+      });
+    </script>
   </body>
 </html>

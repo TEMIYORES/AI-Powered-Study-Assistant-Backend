@@ -40,7 +40,6 @@ const updateAccount = async (req, res) => {
     if (phoneNumber) account.phoneNumber = phoneNumber;
     if (emailVerified) account.emailVerified = emailVerified;
     if (photoURL) account.photoURL = photoURL;
-    if (profileSetup) account.profileSetup = profileSetup;
     await account.save();
     console.log({ account });
     return res.sendStatus(204);
@@ -58,7 +57,13 @@ const loginAccount = async (req, res) => {
   }
   try {
     const account = await Account.findOne({ email }).exec();
-    return res.status(200).json(account);
+    if (!account) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+    if (account.emailVerified) {
+      return res.status(200).json(account);
+    }
+    return res.sendStatus(204);
   } catch (error) {
     console.error("Error finding account:", error);
     return res.sendStatus(400);

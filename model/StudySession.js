@@ -6,13 +6,8 @@ const studySessionSchema = new Schema(
       type: String,
       required: true,
     },
-    subject: {
-      type: String,
-      required: true,
-    },
-    duration: {
-      type: Number,
-      required: true,
+    sessions: {
+      type: Array,
     },
   },
   {

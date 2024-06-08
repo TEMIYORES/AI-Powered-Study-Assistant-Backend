@@ -8,6 +8,7 @@ const notificationSchema = new Schema(
     },
     notifications: {
       type: Array,
+      default: [],
     },
   },
   {

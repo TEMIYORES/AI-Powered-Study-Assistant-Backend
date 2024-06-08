@@ -54,10 +54,12 @@ app.use(express.json());
 
 // middleware for cookies
 app.use(cookieParser());
-
+app.set("view engine", "ejs");
 // built-in middleware for static files
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/", express.static(path.join(__dirname, "public")));
 app.use("/subdir", express.static(path.join(__dirname, "public")));
+app.set("views", path.join(__dirname, "views"));
 
 // Routes
 app.use("/api/auth", authRoute);
@@ -66,6 +68,9 @@ app.use("/api/chats", chatRoute);
 app.use("/api/studysession", StudySessionRoute);
 app.use("/api/notifications", NotificationRoute);
 
+app.get("/", (req, res) => {
+  res.render("breakend", { heading: "Break End!", name: "Qayyum" });
+});
 app.all("*", (req, res) => {
   res.sendStatus(404);
 });

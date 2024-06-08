@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Chat from "../model/Chat.js";
-import Account from "../model/Account.js";
 import Profile from "../model/Profile.js";
-
+import axios from "axios";
 // Access your API key as an environment variable (see "Set up your API key" above)
 const genAI = new GoogleGenerativeAI("AIzaSyAFG0VZGbfseglWD3XMSxVLelAq63AS2yk");
 // ...
@@ -24,27 +23,68 @@ const getChats = async (req, res) => {
   }
 };
 const chatbotResponse = async (req, res) => {
-  const { email, message } = req.body;
+  let { email, message } = req.body;
+  if (!message.includes("?")) message = message + "?";
   if (!email || !message) {
     return res.sendStatus(400);
   }
   try {
     const user = await Profile.findOne({ email }).exec();
-    const prompt = `
-Generate a concise, well-explained and easy to understand answer to the following question by a ${user.age}years old: ${message}.
-note: do not reveal you are being asked a question indirectly. for example, if you receive a compliment instead of a question, probably you have responded to a question and the user was satisfied. so do respond kindly to the compliment also try to refer them to ask you educational questions.
-`;
+    const prompt = `Provide a concise, well-explained, and easy-to-understand answer to the following question from a ${user.age}-year-old: ${message}. After your response, if a video was requested or if you think a video is needed for further explanation, write 'video-required=true'. If no video is needed, write 'video-required=false'. The user prefers to learn by ${user.learningStyle}. Do not reveal that you were asked a question indirectly. For example, if you receive a compliment instead of a question, respond kindly to the compliment and encourage them to ask educational questions.`;
+    //     const prompt = `
+    // Generate a concise, well-explained and easy to understand answer to the following question by a ${user.age}years old: ${message}.
+    // note: Also after your response if video was requested or if you think a video will be required to do further explanation write this: video-required=true. if video is not required write this: video-required=false. this person perfers to learn by ${user.learningStyle}. Do not reveal you are being asked a question indirectly. for example, if you receive a compliment instead of a question, probably you have responded to a question and the user was satisfied. so do respond kindly to the compliment also try to refer them to ask you educational questions.`;
+
     const result = await model.generateContent(prompt);
     const response = await result.response;
     // Extract generated chat from the response
-    const chatResponse = response.text();
+    let chatResponse = response.text();
+    let videoResult = [];
+    console.log({ chatResponse });
+    if (chatResponse.includes("video-required=true")) {
+      await axios
+        .get("https://www.googleapis.com/youtube/v3/search", {
+          params: {
+            q: message,
+            key: "AIzaSyA-g2T5DPUlT0HEkqRCn9amHgVW-UszghQ",
+            type: "video",
+            part: "snippet",
+            maxResults: "5",
+            videoSyndicated: "true",
+            videoEmbeddable: "true",
+          },
+        })
+        .then((response) => {
+          videoResult = response.data.items.map((item) => ({
+            id: item.id.videoId,
+            date: item.snippet.publishedAt,
+            title: item.snippet.title,
+            url: "https://youtu.be/" + item.id.videoId,
+            thumbnail: item.snippet.thumbnails.high.url,
+          }));
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+    //  Substrings to remove
+    const substrings_to_remove = [
+      "\n**video-required=true** \n",
+      "\n**video-required=false** \n",
+      "\nvideo-required=true \n",
+      "\nvideo-required=false \n",
+    ];
+    for (let substring of substrings_to_remove) {
+      chatResponse = chatResponse.replace(substring, "");
+    }
+
     // store the chat in db
     const previousChats = await Chat.findOne({ email }).exec();
     if (previousChats) {
       previousChats.chats = [
         ...previousChats.chats,
-        ["outgoing", message],
-        ["incoming", chatResponse],
+        ["outgoing", { message, videos: [] }],
+        ["incoming", { message: chatResponse, videos: videoResult }],
       ];
       await previousChats.save();
     } else {
@@ -53,16 +93,19 @@ note: do not reveal you are being asked a question indirectly. for example, if y
         chats: [
           [
             "incoming",
-            `Hi there 👋🏽,
+            {
+              message: `Hi there 👋🏽,
         How can I help you today?`,
+              videos: [],
+            },
           ],
-          ["outgoing", message],
-          ["incoming", chatResponse],
+          ["outgoing", { message, videos: [] }],
+          ["incoming", { message: chatResponse, videos: videoResult }],
         ],
       });
     }
     // Respond with the generated response
-    res.status(200).json(chatResponse);
+    res.status(200).json({ message: chatResponse, videos: videoResult });
   } catch (error) {
     console.error("Error generating response:", error);
     res.status(500).json({ error: "Internal server error" });
