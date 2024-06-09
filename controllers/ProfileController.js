@@ -48,4 +48,21 @@ const getSubjects = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-export { saveProfile, getSubjects };
+const getProfile = async (req, res) => {
+  const { email } = req.params;
+  if (!email) {
+    return res.status(400).json({
+      message: "email is required",
+    });
+  }
+  try {
+    const profile = await Profile.findOne({ email }).exec();
+    if (!profile) {
+      return res.status(400).json({ message: "No profile found." });
+    }
+    return res.status(200).json(profile);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export { saveProfile, getSubjects, getProfile };

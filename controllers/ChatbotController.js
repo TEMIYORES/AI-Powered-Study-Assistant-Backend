@@ -46,7 +46,7 @@ const chatbotResponse = async (req, res) => {
         .get("https://www.googleapis.com/youtube/v3/search", {
           params: {
             q: message,
-            key: "AIzaSyA-g2T5DPUlT0HEkqRCn9amHgVW-UszghQ",
+            key: process.env.GOOGLE_API_KEY,
             type: "video",
             part: "snippet",
             maxResults: "5",

@@ -49,7 +49,7 @@ function getCurrentSession(email, studyPlan) {
       nodeCron.schedule(timeToCron(session.endTime, dayOfWeek), () => {
         sendNotification(
           email,
-          `It is ${session.startTime}! End of ${session.subject} study session.`,
+          `It is ${session.endTime}! End of ${session.subject} study session.`,
           session,
           dayOfWeek,
           "sessionend"
@@ -62,7 +62,7 @@ function getCurrentSession(email, studyPlan) {
         nodeCron.schedule(timeToCron(breakTime.startTime, dayOfWeek), () => {
           sendNotification(
             email,
-            `It is ${session.startTime}! Start your break now during ${session.subject} session.`,
+            `It is ${breakTime.startTime}! Start your break now during ${session.subject} session.`,
             session,
             dayOfWeek,
             "breaktime"
@@ -73,7 +73,7 @@ function getCurrentSession(email, studyPlan) {
         nodeCron.schedule(timeToCron(breakTime.endTime, dayOfWeek), () => {
           sendNotification(
             email,
-            `It is ${session.startTime}! End of break. Continue studying ${session.subject}.`,
+            `It is ${breakTime.endTime}! End of break. Continue studying ${session.subject}.`,
             session,
             dayOfWeek,
             "breakend"

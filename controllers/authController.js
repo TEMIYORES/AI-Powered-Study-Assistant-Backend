@@ -37,11 +37,11 @@ const updateAccount = async (req, res) => {
   }
   try {
     const account = await Account.findOne({ email }).exec();
-    if (phoneNumber) account.phoneNumber = phoneNumber;
+    if (phoneNumber && account.phoneNumber === "")
+      account.phoneNumber = phoneNumber;
     if (emailVerified) account.emailVerified = emailVerified;
-    if (photoURL) account.photoURL = photoURL;
+    if (photoURL && account.photoURL === "") account.photoURL = photoURL;
     await account.save();
-    console.log({ account });
     return res.sendStatus(204);
   } catch (error) {
     console.error("Error updating info:", error);
@@ -69,5 +69,31 @@ const loginAccount = async (req, res) => {
     return res.sendStatus(400);
   }
 };
+const getAccount = async (req, res) => {
+  const { email } = req.params;
+  if (!email) {
+    return res.status(400).json({
+      message: "email is required",
+    });
+  }
+  try {
+    const account = await Account.findOne({ email }).exec();
+    if (!account) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+    if (account.emailVerified) {
+      return res.status(200).json({
+        fullName: account.fullName,
+        email: account.email,
+        phoneNumber: account.phoneNumber,
+        photoURL: account.photoURL,
+      });
+    }
+    return res.sendStatus(204);
+  } catch (error) {
+    console.error("Error finding account:", error);
+    return res.sendStatus(400);
+  }
+};
 
-export { registerAccount, updateAccount, loginAccount };
+export { registerAccount, updateAccount, loginAccount, getAccount };

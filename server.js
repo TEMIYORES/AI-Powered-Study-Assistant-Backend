@@ -9,6 +9,7 @@ import profileRoute from "./routes/api/profile.js";
 import chatRoute from "./routes/api/chat.js";
 import StudySessionRoute from "./routes/api/studySession.js";
 import NotificationRoute from "./routes/api/notification.js";
+import settingsRoute from "./routes/api/settings.js";
 import cookieParser from "cookie-parser";
 import credentials from "./middleware/credentials.js";
 import cloudinary from "cloudinary";
@@ -65,6 +66,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use("/api/auth", authRoute);
 app.use("/api/profile", profileRoute);
 app.use("/api/chats", chatRoute);
+app.use("/api/settings", settingsRoute);
 app.use("/api/studysession", StudySessionRoute);
 app.use("/api/notifications", NotificationRoute);
 
