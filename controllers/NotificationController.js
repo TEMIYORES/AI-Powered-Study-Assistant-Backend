@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 // Get the directory name
 import { dirname } from "path";
 import StudyPlan from "../model/StudyPlan.js";
+import StudySession from "../model/StudySession.js";
 const __dirname = dirname(__filename);
 
 const getNotifications = async (req, res) => {
@@ -47,6 +48,43 @@ function getCurrentSession(email, studyPlan) {
 
       // Schedule end of study session
       nodeCron.schedule(timeToCron(session.endTime, dayOfWeek), () => {
+        let currentDate = new Date();
+        // Get the current time in milliseconds
+        let currentTime = currentDate.getTime();
+        // Calculate the time 5 minutes from now (5 minutes * 60 seconds * 1000 milliseconds)
+        const dateIn5mins = new Date(currentTime + 5 * 60 * 1000);
+        const loggedEndTime = `${dateIn5mins.getHours()}:${dateIn5mins.getMinutes()}`;
+        console.log({ loggedEndTime });
+
+        nodeCron.schedule(timeToCron(loggedEndTime, dayOfWeek), async () => {
+          const studySessions = await StudySession.findOne({ email }).exec();
+          const loggedSession = studySessions.sessions.filter(
+            (studysession) => {
+              const startDate = new Date();
+              const [starttimehour, starttimeminute] =
+                session.startTime.split(":");
+              startDate.setHours(starttimehour);
+              startDate.setMinutes(starttimeminute);
+              return (
+                studysession.subject === session.subject &&
+                studysession.date >= startDate &&
+                studysession.date <= new Date()
+              );
+            }
+          );
+          if (loggedSession.length === 0) {
+            studySessions.missedSessions = [
+              ...studySessions.missedSessions,
+              {
+                subject: session.subject,
+                startTime: session.startTime,
+                endTime: session.endTime,
+                date: new Date(),
+              },
+            ];
+            await studySessions.save();
+          }
+        });
         sendNotification(
           email,
           `It is ${session.endTime}! End of ${session.subject} study session.`,
@@ -84,25 +122,6 @@ function getCurrentSession(email, studyPlan) {
   });
 }
 
-// const scheduleNotification = async (req, res) => {
-//   const { email } = req.body;
-//   console.log({ email });
-//   if (!email) return res.status(400).json({ message: "email is required" });
-//   try {
-//     const studyPlan = await StudyPlan.findOne({ email }).exec();
-//     if (studyPlan) {
-//       getCurrentSession(email, studyPlan.studyPlan);
-//       return res
-//         .status(200)
-//         .json({ message: "Notification scheduled successfully!" });
-//     }
-//     return res.sendStatus(204);
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).json({ error: err });
-//   }
-// };
-
 const scheduleNotification = async () => {
   try {
     const studyPlans = await StudyPlan.find();
@@ -116,6 +135,7 @@ const scheduleNotification = async () => {
   }
 };
 scheduleNotification();
+
 const deleteNotifications = async (req, res) => {
   const { email } = req.body;
   const notification = await Notification.findOne({ email }).exec();

@@ -9,6 +9,12 @@ const studySessionSchema = new Schema(
     sessions: {
       type: Array,
     },
+    missedSessions: {
+      type: Array,
+    },
+    date: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

@@ -35,12 +35,15 @@ const updateAccount = async (req, res) => {
       message: "email is required",
     });
   }
+  console.log("updating...");
+  console.log(req.body);
   try {
     const account = await Account.findOne({ email }).exec();
-    if (phoneNumber && account.phoneNumber === "")
+    console.log({ account });
+    if (phoneNumber && account.phoneNumber === null)
       account.phoneNumber = phoneNumber;
     if (emailVerified) account.emailVerified = emailVerified;
-    if (photoURL && account.photoURL === "") account.photoURL = photoURL;
+    if (photoURL && account.photoURL === null) account.photoURL = photoURL;
     await account.save();
     return res.sendStatus(204);
   } catch (error) {
@@ -87,6 +90,7 @@ const getAccount = async (req, res) => {
         email: account.email,
         phoneNumber: account.phoneNumber,
         photoURL: account.photoURL,
+        studyPlanSetup: account.studyPlanSetup,
       });
     }
     return res.sendStatus(204);

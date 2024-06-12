@@ -8,6 +8,6 @@ import {
 const router = express.Router();
 router.route("/progress/:email").get(getStudyMins);
 router.route("/").post(logSession);
-router.route("/:email").get(getStudySessions);
+router.route("/:email/:timeRange").get(getStudySessions);
 
 export default router;

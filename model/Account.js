@@ -27,6 +27,10 @@ const accountSchema = new Schema(
     password: {
       type: String,
     },
+    studyPlanSetup: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

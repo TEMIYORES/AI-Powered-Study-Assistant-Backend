@@ -24,17 +24,16 @@ const __filename = fileURLToPath(import.meta.url);
 import { dirname } from "path";
 const __dirname = dirname(__filename);
 
-cloudinary.config({
-  cloud_name: "dlxovrmtr",
-  api_key: process.env.CLOUDINARY_SECRET_API_KEY,
-  api_secret: process.env.CLOUDINARY_SECRET_KEY,
-});
-
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3600;
 
+cloudinary.config({
+  cloud_name: "dlxovrmtr",
+  api_key: process.env.CLOUDINARY_SECRET_API_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET_KEY,
+});
 connectDB();
 // custom middleware logger
 app.use(logger);

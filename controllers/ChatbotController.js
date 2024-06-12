@@ -8,7 +8,6 @@ const genAI = new GoogleGenerativeAI("AIzaSyAFG0VZGbfseglWD3XMSxVLelAq63AS2yk");
 
 // The Gemini 1.5 models are versatile and work with both text-only and multimodal prompts
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
 const getChats = async (req, res) => {
   const { email } = req.params;
   console.log({ email });
@@ -31,16 +30,13 @@ const chatbotResponse = async (req, res) => {
   try {
     const user = await Profile.findOne({ email }).exec();
     const prompt = `Provide a concise, well-explained, and easy-to-understand answer to the following question from a ${user.age}-year-old: ${message}. After your response, if a video was requested or if you think a video is needed for further explanation, write 'video-required=true'. If no video is needed, write 'video-required=false'. The user prefers to learn by ${user.learningStyle}. Do not reveal that you were asked a question indirectly. For example, if you receive a compliment instead of a question, respond kindly to the compliment and encourage them to ask educational questions.`;
-    //     const prompt = `
-    // Generate a concise, well-explained and easy to understand answer to the following question by a ${user.age}years old: ${message}.
-    // note: Also after your response if video was requested or if you think a video will be required to do further explanation write this: video-required=true. if video is not required write this: video-required=false. this person perfers to learn by ${user.learningStyle}. Do not reveal you are being asked a question indirectly. for example, if you receive a compliment instead of a question, probably you have responded to a question and the user was satisfied. so do respond kindly to the compliment also try to refer them to ask you educational questions.`;
+
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     // Extract generated chat from the response
     let chatResponse = response.text();
     let videoResult = [];
-    console.log({ chatResponse });
     if (chatResponse.includes("video-required=true")) {
       await axios
         .get("https://www.googleapis.com/youtube/v3/search", {
@@ -75,7 +71,7 @@ const chatbotResponse = async (req, res) => {
       "\nvideo-required=false \n",
     ];
     for (let substring of substrings_to_remove) {
-      chatResponse = chatResponse.replace(substring, "");
+      chatResponse = chatResponse.replaceAll(substring, "");
     }
 
     // store the chat in db
