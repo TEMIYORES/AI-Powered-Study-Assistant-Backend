@@ -96,7 +96,7 @@ const getStudyMins = async (req, res) => {
       totalMinutes,
       averageDailyMinutes,
       sessions: Object.values(Object.values(groupedSubjects)),
-      loggedSessions: validSessions.length,
+      loggedSessions: sessions?.length,
       missedSessions,
     });
   } catch (error) {

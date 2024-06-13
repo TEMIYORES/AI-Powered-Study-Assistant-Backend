@@ -17,9 +17,11 @@ const updateSettingsAccount = async (req, res) => {
     if (files) {
       imageUrl = await files[0].then(async (fileBuffer) => {
         // Extract the file buffer from the file object
-        const splitUrl = account.photoURL.split("/");
-        const imageToDeleteId = splitUrl[splitUrl.length - 1].split(".")[0];
-        await deleteImage(imageToDeleteId);
+        if (account.photoURL) {
+          const splitUrl = account.photoURL.split("/");
+          const imageToDeleteId = splitUrl[splitUrl.length - 1].split(".")[0];
+          await deleteImage(imageToDeleteId);
+        }
         const imageUrls = await uploadImageBuffer(
           fileBuffer,
           "AI-Powered Study Assistant"
@@ -32,13 +34,12 @@ const updateSettingsAccount = async (req, res) => {
     // if (photoURL) account.photoURL = photoURL;
     if (phoneNumber) account.phoneNumber = phoneNumber;
     await account.save();
-    return res.sendStatus(204);
+    return res.status(200).json(account);
   } catch (error) {
     console.error("Error updating info:", error);
     return res.sendStatus(400);
   }
 };
-
 
 // Function to delete an image from Cloudinary
 const deleteImage = async (imageToDeleteId) => {

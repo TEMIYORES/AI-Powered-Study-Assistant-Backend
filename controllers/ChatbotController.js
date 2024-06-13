@@ -31,11 +31,11 @@ const chatbotResponse = async (req, res) => {
     const user = await Profile.findOne({ email }).exec();
     const prompt = `Provide a concise, well-explained, and easy-to-understand answer to the following question from a ${user.age}-year-old: ${message}. After your response, if a video was requested or if you think a video is needed for further explanation, write 'video-required=true'. If no video is needed, write 'video-required=false'. The user prefers to learn by ${user.learningStyle}. Do not reveal that you were asked a question indirectly. For example, if you receive a compliment instead of a question, respond kindly to the compliment and encourage them to ask educational questions.`;
 
-
     const result = await model.generateContent(prompt);
     const response = await result.response;
     // Extract generated chat from the response
     let chatResponse = response.text();
+    console.log({ chatResponse });
     let videoResult = [];
     if (chatResponse.includes("video-required=true")) {
       await axios
