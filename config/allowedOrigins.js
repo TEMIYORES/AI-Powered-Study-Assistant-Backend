@@ -1,7 +1,5 @@
 const allowedOrigins = [
-  "https://ecommart.netlify.app",
-  "https://ecommart.ng",
-  "https://*.ecommart.ng",
+  "https://careless-swim-nifty-border-production.pipeops.app/",
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:5174",
