@@ -25,7 +25,7 @@
     "uuid": "^9.0.1"
   },
   "scripts": {
-    "build":"node server.js",
+    "build": "node server.js",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },

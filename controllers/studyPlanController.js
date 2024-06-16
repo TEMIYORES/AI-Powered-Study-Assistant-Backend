@@ -2,7 +2,7 @@ import Profile from "../model/Profile.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import StudyPlan from "../model/StudyPlan.js";
 import Account from "../model/Account.js";
-
+import fetch from "node-fetch";
 // Access your API key as an environment variable (see "Set up your API key" above)
 const genAI = new GoogleGenerativeAI("AIzaSyAFG0VZGbfseglWD3XMSxVLelAq63AS2yk");
 // ...
@@ -66,7 +66,7 @@ const generateStudyPlan = async (req, res) => {
     {"studyPlan": {"week": [{"day": "","availableTime": "","sessions": [{"subject": "","startTime": "","endTime": "","breaks": [{"startTime": "","endTime": ""}],"tips": []}]},]}}
     Please stick strictly to constraints provided. Make sure to include study sessions, breaks, and tips for each day based on the provided information. Do not add an explanation for the studyplan just the json
 `;
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent(prompt, { fetch });
     const response = await result.response;
     // Extract generated study plan from the response
     const studyPlan = JSON.parse(
