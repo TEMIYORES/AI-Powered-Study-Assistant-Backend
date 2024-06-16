@@ -42,7 +42,8 @@ function getCurrentSession(email, studyPlan) {
           `It is ${session.startTime}! Start studying ${session.subject} now!`,
           session,
           dayOfWeek,
-          "sessionstart"
+          "sessionstart",
+          "https://careless-swim-nifty-border-production.pipeops.app/dashboard"
         );
       });
 
@@ -90,7 +91,8 @@ function getCurrentSession(email, studyPlan) {
           `It is ${session.endTime}! End of ${session.subject} study session.`,
           session,
           dayOfWeek,
-          "sessionend"
+          "sessionend",
+          "https://careless-swim-nifty-border-production.pipeops.app/logsession"
         );
       });
 
@@ -103,7 +105,8 @@ function getCurrentSession(email, studyPlan) {
             `It is ${breakTime.startTime}! Start your break now during ${session.subject} session.`,
             session,
             dayOfWeek,
-            "breaktime"
+            "breaktime",
+            ""
           );
         });
 
@@ -114,7 +117,8 @@ function getCurrentSession(email, studyPlan) {
             `It is ${breakTime.endTime}! End of break. Continue studying ${session.subject}.`,
             session,
             dayOfWeek,
-            "breakend"
+            "breakend",
+            "https://careless-swim-nifty-border-production.pipeops.app/dashboard"
           );
         });
       });
@@ -160,7 +164,14 @@ const cancelNotification = async (req, res) => {
   // }
 };
 
-const sendNotification = async (email, message, session, dayOfWeek, type) => {
+const sendNotification = async (
+  email,
+  message,
+  session,
+  dayOfWeek,
+  type,
+  appLink
+) => {
   const accountUser = await Account.findOne({ email }).exec();
 
   // Fetch user details and send notification
@@ -169,7 +180,7 @@ const sendNotification = async (email, message, session, dayOfWeek, type) => {
   const templateData = {
     name: accountUser.fullName,
     heading: message,
-    appLink: "",
+    appLink,
     unsubscribeLink: "",
     type,
   };
