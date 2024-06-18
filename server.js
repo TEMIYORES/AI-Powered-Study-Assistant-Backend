@@ -70,7 +70,12 @@ app.use("/api/studysession", StudySessionRoute);
 app.use("/api/notifications", NotificationRoute);
 
 app.get("/", (req, res) => {
-  res.render("breakend", { heading: "Break End!", name: "Qayyum" });
+  res.render("breakend", {
+    heading: "Break End!",
+    name: "Qayyum",
+    appLink:
+      "https://careless-swim-nifty-border-production.pipeops.app/dashboard",
+  });
 });
 app.all("*", (req, res) => {
   res.sendStatus(404);

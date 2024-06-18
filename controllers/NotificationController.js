@@ -31,6 +31,7 @@ function timeToCron(time, dayOfWeek) {
   const [hours, minutes] = time.split(":");
   return `0 ${minutes} ${hours} * * ${dayOfWeek}`;
 }
+console.log(new Date().getHours(),new Date().getMinutes())
 function getCurrentSession(email, studyPlan) {
   studyPlan.week.forEach((day) => {
     const dayOfWeek = day.day;
