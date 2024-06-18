@@ -5,7 +5,7 @@ import Account from "../model/Account.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import ejs from "ejs";
-import fs from "fs";
+
 // Get the current file's URL
 const __filename = fileURLToPath(import.meta.url);
 
